@@ -27,15 +27,124 @@
 ;-----------------------o---------------------------------------------o
 ;|Use it whatever and wherever you like. Hope it help                 |
 ;=====================================================================o
- 
- 
+
+;o-------------------------------------------------------------------------------------------------------------------------------------o
+; 1、Chrome没打开时，打开Chrome
+; 2、Chrome已打开，未激活时，则激活Chrome
+; 3、Chrome已激活，则隐藏Chrome
+; 本来这种功能对AutoHotkey来说非常简单，
+; 但是在激活Chrome或FireFox浏览器的时候却总是无效，
+; 经朋友指点是有些程序的窗口会存在N个子窗口，
+; 所以增加了寻找主窗口HWND的过程，就可以正常激活了。
+; 完整代码如下：
+
+!s::hyf_onekeyWindow("C:\Program Files (x86)\Google\Chrome\Application\Chrome.exe", "Chrome_WidgetWin_1", "\S")
+
+hyf_onekeyWindow(exePath, titleClass := "", titleReg := "")
+{ ;有些窗口用Ahk_exe exeName判断不准确，所以自定义个titleClass
+    SplitPath, exePath, exeName, , , noExt
+    If !hyf_processExist(exeName)
+    {
+        ;hyf_tooltip("启动中，请稍等...")
+        Run,% exePath
+        ;打开后自动运行 TODO
+        funcName := noExt . "_runDo"
+        If IsFunc(funcName)
+        {
+            ;hyf_tooltip("已自动执行函数：" . funcName)
+            Func(funcName).Call()
+        }
+        Else If titleClass
+        {
+            WinWait, Ahk_class %titleClass%, , 1
+            WinActivate Ahk_class %titleClass%
+        }
+    }
+    Else If WinActive("Ahk_exe " . exeName)
+    {
+        funcName := noExt . "_hideDo"
+        If IsFunc(funcName)
+            Func(funcName).Call()
+        ; WinHide
+        WinMinimize
+        ;激活鼠标所在窗口 TODO
+        MouseGetPos, , , idMouse
+        WinActivate Ahk_id %idMouse%
+    }
+    Else
+    {
+        If titleReg
+            titleClass := "Ahk_id " . hyf_getMainIDOfProcess(exeName, titleClass, titleReg)
+        Else If titleClass
+            titleClass := "Ahk_class " . titleClass
+        Else
+            titleClass := "Ahk_exe " . exeName
+        WinShow %titleClass%
+        WinActivate %titleClass%
+        funcName := noExt . "_activeDo"
+        If IsFunc(funcName)
+        {
+            ;hyf_tooltip("已自动执行函数：" . funcName)
+            Func(funcName).Call()
+        }
+    }
+}
+
+hyf_processExist(n) ;判断进程是否存在（返回PID）
+{ ;n为进程名
+    Process, Exist, %n% ;比IfWinExist可靠
+    Return ErrorLevel
+}
+
+hyf_tooltip(str, t := 1, ExitScript := 0, x := "", y := "")  ;提示t秒并自动消失
+{
+    t *= 1000
+    ToolTip, %str%, %x%, %y%
+    SetTimer, hyf_removeToolTip, -%t%
+    If ExitScript
+    {
+        Gui, Destroy
+        Exit
+    }
+}
+
+hyf_getMainIDOfProcess(exeName, cls, titleReg := "") ;获取类似chrome等多进程的主程序ID
+{
+    DetectHiddenWindows, On
+    WinGet, arr, List, Ahk_exe %exeName%
+    Loop,% arr
+    {
+        n := arr%A_Index%
+        WinGetClass, classLoop, Ahk_id %n%
+        ;MsgBox,% A_Index . "/" . arr . "`n" . classLoop . "`n" . cls
+        If (classLoop = cls)
+        {
+            If !StrLen(titleReg) ;不需要判断标题
+                Return n
+            WinGetTitle, titleLoop, Ahk_id %n%
+            ;MsgBox,% A_Index . "/" . arr . "`n" . classLoop . "`n" . titleLoop
+            If (titleLoop ~= titleReg)
+                Return n
+        }
+        Continue
+    }
+    Return False
+}
+
+hyf_removeToolTip() ;清除ToolTip
+{
+    ToolTip
+}
+
+;o-------------------------------------------------------------------------------------------------------------------------------------o
+
 ;=====================================================================o
 ;                       CapsLock Initializer                         ;|
 ;---------------------------------------------------------------------o
 SetCapsLockState, AlwaysOff                                          ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                       CapsLock Switcher:                           ;|
 ;---------------------------------o-----------------------------------o
@@ -50,27 +159,17 @@ else                                                                 ;|
 KeyWait, ``                                                          ;|
 return                                                               ;|
 ;---------------------------------------------------------------------o
- 
- 
-;=====================================================================o
-;                         CapsLock Escaper:                          ;|
-;----------------------------------o----------------------------------o
-;                        CapsLock  |  {ESC}                          ;|
-;----------------------------------o----------------------------------o
-CapsLock::Send, {ESC}                                                ;|
-;---------------------------------------------------------------------o
- 
- 
+
 ;=====================================================================o
 ;                    CapsLock Direction Navigator                    ;|
 ;-----------------------------------o---------------------------------o
-;                      CapsLock + h |  Left                          ;|
-;                      CapsLock + j |  Down                          ;|
-;                      CapsLock + k |  Up                            ;|
+;                      CapsLock + j |  Left                          ;|
+;                      CapsLock + k |  Down                          ;|
+;                      CapsLock + i |  Up                            ;|
 ;                      CapsLock + l |  Right                         ;|
 ;                      Ctrl, Alt Compatible                          ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & h::                                                       ;|
+CapsLock & j::                                                       ;|
 if GetKeyState("control") = 0                                        ;|
 {                                                                    ;|
     if GetKeyState("alt") = 0                                        ;|
@@ -88,7 +187,7 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;-----------------------------------o                                ;|
-CapsLock & j::                                                       ;|
+CapsLock & k::                                                       ;|
 if GetKeyState("control") = 0                                        ;|
 {                                                                    ;|
     if GetKeyState("alt") = 0                                        ;|
@@ -106,7 +205,7 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;-----------------------------------o                                ;|
-CapsLock & k::                                                       ;|
+CapsLock & i::                                                       ;|
 if GetKeyState("control") = 0                                        ;|
 {                                                                    ;|
     if GetKeyState("alt") = 0                                        ;|
@@ -142,16 +241,16 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                     CapsLock Home/End Navigator                    ;|
 ;-----------------------------------o---------------------------------o
-;                      CapsLock + i |  Home                          ;|
-;                      CapsLock + o |  End                           ;|
+;                      CapsLock + h |  Home                          ;|
+;                      CapsLock + n |  End                           ;|
 ;                      Ctrl, Alt Compatible                          ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & i::                                                       ;|
+CapsLock & h::                                                       ;|
 if GetKeyState("control") = 0                                        ;|
 {                                                                    ;|
     if GetKeyState("alt") = 0                                        ;|
@@ -169,7 +268,7 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;-----------------------------------o                                ;|
-CapsLock & o::                                                       ;|
+CapsLock & n::                                                       ;|
 if GetKeyState("control") = 0                                        ;|
 {                                                                    ;|
     if GetKeyState("alt") = 0                                        ;|
@@ -187,13 +286,13 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                      CapsLock Page Navigator                       ;|
 ;-----------------------------------o---------------------------------o
 ;                      CapsLock + u |  PageUp                        ;|
-;                      CapsLock + p |  PageDown                      ;|
+;                      CapsLock + o |  PageDown                      ;|
 ;                      Ctrl, Alt Compatible                          ;|
 ;-----------------------------------o---------------------------------o
 CapsLock & u::                                                       ;|
@@ -214,7 +313,7 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;-----------------------------------o                                ;|
-CapsLock & p::                                                       ;|
+CapsLock & o::                                                       ;|
 if GetKeyState("control") = 0                                        ;|
 {                                                                    ;|
     if GetKeyState("alt") = 0                                        ;|
@@ -232,8 +331,8 @@ else {                                                               ;|
 }                                                                    ;|
 return                                                               ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                     CapsLock Mouse Controller                      ;|
 ;-----------------------------------o---------------------------------o
@@ -243,19 +342,19 @@ return                                                               ;|
 ;                  CapsLock + Right |  Mouse Right                   ;|
 ;    CapsLock + Enter(Push Release) |  Mouse Left Push(Release)      ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & Up::    MouseMove, 0, -10, 0, R                           ;|
-CapsLock & Down::  MouseMove, 0, 10, 0, R                            ;|
-CapsLock & Left::  MouseMove, -10, 0, 0, R                           ;|
-CapsLock & Right:: MouseMove, 10, 0, 0, R                            ;|
-;-----------------------------------o                                ;|
-CapsLock & Enter::                                                   ;|
-SendEvent {Blind}{LButton down}                                      ;|
-KeyWait Enter                                                        ;|
-SendEvent {Blind}{LButton up}                                        ;|
-return                                                               ;|
+; CapsLock & Up::    MouseMove, 0, -10, 0, R                           ;|
+; CapsLock & Down::  MouseMove, 0, 10, 0, R                            ;|
+; CapsLock & Left::  MouseMove, -10, 0, 0, R                           ;|
+; CapsLock & Right:: MouseMove, 10, 0, 0, R                            ;|
+; ;-----------------------------------o                                ;|
+; CapsLock & Enter::                                                   ;|
+; SendEvent {Blind}{LButton down}                                      ;|
+; KeyWait Enter                                                        ;|
+; SendEvent {Blind}{LButton up}                                        ;|
+; return                                                               ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                           CapsLock Deletor                         ;|
 ;-----------------------------------o---------------------------------o
@@ -264,13 +363,13 @@ return                                                               ;|
 ;                     CapsLock + ,  |  BackSpace                     ;|
 ;                     CapsLock + .  |  Ctrl + BackSpace              ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & ,:: Send, {Del}                                           ;|
-CapsLock & .:: Send, ^{Del}                                          ;|
-CapsLock & m:: Send, {BS}                                            ;|
-CapsLock & n:: Send, ^{BS}                                           ;|
+; CapsLock & ,:: Send, {Del}                                           ;|
+; CapsLock & .:: Send, ^{Del}                                          ;|
+; CapsLock & m:: Send, {BS}                                            ;|
+; CapsLock & n:: Send, ^{BS}                                           ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                            CapsLock Editor                         ;|
 ;-----------------------------------o---------------------------------o
@@ -283,17 +382,17 @@ CapsLock & n:: Send, ^{BS}                                           ;|
 ;                     CapsLock + w  |  Ctrl + Right(Move as [vim: w]);|
 ;                     CapsLock + b  |  Ctrl + Left (Move as [vim: b]);|
 ;-----------------------------------o---------------------------------o
-CapsLock & z:: Send, ^z                                              ;|
-CapsLock & x:: Send, ^x                                              ;|
-CapsLock & c:: Send, ^c                                              ;|
-CapsLock & v:: Send, ^v                                              ;|
-CapsLock & a:: Send, ^a                                              ;|
-CapsLock & y:: Send, ^y                                              ;|
-CapsLock & w:: Send, ^{Right}                                        ;|
-CapsLock & b:: Send, ^{Left}                                         ;|
+; CapsLock & z:: Send, ^z                                              ;|
+; CapsLock & x:: Send, ^x                                              ;|
+; CapsLock & c:: Send, ^c                                              ;|
+; CapsLock & v:: Send, ^v                                              ;|
+; CapsLock & a:: Send, ^a                                              ;|
+; CapsLock & y:: Send, ^y                                              ;|
+; CapsLock & w:: Send, ^{Right}                                        ;|
+; CapsLock & b:: Send, ^{Left}                                         ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                       CapsLock Media Controller                    ;|
 ;-----------------------------------o---------------------------------o
@@ -313,8 +412,8 @@ CapsLock & F5:: Send, {Media_Prev}                                   ;|
 CapsLock & F6:: Send, {Media_Next}                                   ;|
 CapsLock & F7:: Send, {Media_Stop}                                   ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                      CapsLock Window Controller                    ;|
 ;-----------------------------------o---------------------------------o
@@ -339,25 +438,21 @@ return                                                               ;|
 ;-----------------------------------o                                ;|
 CapsLock & g:: Send, {AppsKey}                                       ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                        CapsLock Self Defined Area                  ;|
 ;-----------------------------------o---------------------------------o
 ;                     CapsLock + d  |  Alt + d(Dictionary)           ;|
 ;                     CapsLock + f  |  Alt + f(Search via Everything);|
 ;                     CapsLock + e  |  Open Search Engine            ;|
-;                     CapsLock + r  |  Open Shell                    ;|
 ;                     CapsLock + t  |  Open Text Editor              ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & d:: Send, !d                                              ;|
-CapsLock & f:: Send, !f                                              ;|
-CapsLock & e:: Run http://cn.bing.com/                               ;|
-CapsLock & r:: Run Powershell                                        ;|
-CapsLock & t:: Run C:\Program Files (x86)\Notepad++\notepad++.exe    ;|
+CapsLock & e:: Run https://www.baidu.com/                            ;|
+CapsLock & r:: Run notepad++                                         ;|
 ;---------------------------------------------------------------------o
- 
- 
+
+
 ;=====================================================================o
 ;                        CapsLock Char Mapping                       ;|
 ;-----------------------------------o---------------------------------o
@@ -405,3 +500,4 @@ CapsLock & 8:: Send,+8                                               ;|
 CapsLock & 9:: Send,+9                                               ;|
 CapsLock & 0:: Send,+0                                               ;|
 ;---------------------------------------------------------------------o
+
