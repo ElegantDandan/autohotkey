@@ -394,23 +394,21 @@ return                                                               ;|
 
 
 ;=====================================================================o
-;                       CapsLock Media Controller                    ;|
+;                          Alt Media Controller                      ;|
 ;-----------------------------------o---------------------------------o
-;                    CapsLock + F1  |  Volume_Mute                   ;|
-;                    CapsLock + F2  |  Volume_Down                   ;|
-;                    CapsLock + F3  |  Volume_Up                     ;|
-;                    CapsLock + F3  |  Media_Play_Pause              ;|
-;                    CapsLock + F5  |  Media_Prev                    ;|
-;                    CapsLock + F6  |  Media_Next                    ;|
-;                    CapsLock + F7  |  Media_Stop                    ;|
+;                    RAlt      & /  |  Volume_Mute                   ;|
+;                    RAlt      & ,  |  Volume_Down                   ;|
+;                    RAlt      & .  |  Volume_Up                     ;|
+;                    LAlt + Space   |  Media_Play_Pause              ;|
+;                    LAlt + z       |  Media_Prev                    ;|
+;                    LAlt + x       |  Media_Next                    ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & F1:: Send, {Volume_Mute}                                  ;|
-CapsLock & F2:: Send, {Volume_Down}                                  ;|
-CapsLock & F3:: Send, {Volume_Up}                                    ;|
-CapsLock & F4:: Send, {Media_Play_Pause}                             ;|
-CapsLock & F5:: Send, {Media_Prev}                                   ;|
-CapsLock & F6:: Send, {Media_Next}                                   ;|
-CapsLock & F7:: Send, {Media_Stop}                                   ;|
+RAlt      & /::     Send, {Volume_Mute}                              ;|
+RAlt      & ,::     Send, {Volume_Down}                              ;|
+RAlt      & .::     Send, {Volume_Up}                                ;|
+LAlt      & Space:: Send, {Media_Play_Pause}                         ;|
+LAlt      & z::     Send, {Media_Prev}                               ;|
+LAlt      & x::     Send, {Media_Next}                               ;|
 ;---------------------------------------------------------------------o
 
 
