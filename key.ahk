@@ -429,8 +429,8 @@ CapsLock & g:: Send, {AppsKey}                                       ;|
 ;                     CapsLock + e  |  Open Search Engine            ;|
 ;                     CapsLock + t  |  Open Text Editor              ;|
 ;-----------------------------------o---------------------------------o
-CapsLock & e:: Run https://www.baidu.com/                            ;|
-CapsLock & r:: Run notepad++                                         ;|
+LAlt & r:: Run https://www.baidu.com/                                ;|
+LAlt & e:: Run notepad++                                             ;|
 ;---------------------------------------------------------------------o
 
 
@@ -455,9 +455,9 @@ CapsLock & r:: Run notepad++                                         ;|
 ;                     CapsLock + 0  |  Shift + 0     )               ;|
 ;-----------------------------------o---------------------------------o
 CapsLock & `;:: Send, {Enter}                                        ;|
-CapsLock & ':: Send, =                                               ;|
-CapsLock & [:: Send, ^-                                              ;|
-CapsLock & ]:: Send, {F12}                                           ;|
+CapsLock & '::  Send, =                                               ;|
+CapsLock & [::  Send, ^-                                              ;|
+CapsLock & ]::  Send, {F12}                                           ;|
 ;-----------------------------------o                                ;|
 CapsLock & /::                                                       ;|
 Send, ^e                                                             ;|
