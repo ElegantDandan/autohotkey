@@ -424,13 +424,10 @@ CapsLock & g:: Send, {AppsKey}                                       ;|
 ;=====================================================================o
 ;                        CapsLock Self Defined Area                  ;|
 ;-----------------------------------o---------------------------------o
-;                     CapsLock + d  |  Alt + d(Dictionary)           ;|
-;                     CapsLock + f  |  Alt + f(Search via Everything);|
-;                     CapsLock + e  |  Open Search Engine            ;|
-;                     CapsLock + t  |  Open Text Editor              ;|
 ;-----------------------------------o---------------------------------o
-LAlt & r:: Run https://www.baidu.com/                                ;|
-LAlt & e:: Run notepad++                                             ;|
+LAlt & b:: Run https://www.baidu.com/                                ;|
+LAlt & g:: Run https://www.google.com/                               ;|
+LAlt & n:: Run notepad++                                             ;|
 ;---------------------------------------------------------------------o
 
 
